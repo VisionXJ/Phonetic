@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s ="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:cp="input.components.*" 
+		 width="790" height="340" mouseEnabled="false"
+		 mouseDown="handlerKeyDown(event)">
+	<s:states>
+		<s:State name="letter"/>
+		<s:State name="symbol"/>
+	</s:states>
+	<fx:Declarations>
+		<mx:SoundEffect id="type" source="@Embed(source='../assets/snd.mp3')"/>
+	</fx:Declarations>
+	<fx:Metadata>
+		
+		/**
+		* 
+		* 按下按键。
+		* 
+		*/
+		
+		[Event(name="keyDown", type="flash.events.KeyboardEvent")]
+		
+	</fx:Metadata>
+	<s:Label text="{title}" fontSize="16" y="10" color="0xFFFFFF"
+			 mouseChildren="false" mouseEnabled="false"
+			 textAlign="center" horizontalCenter="0"/>
+	<s:Group y="30">
+		<s:Group includeIn="letter" width="100%" height="100%">
+			<cp:KeyBoardButton width="80" height="50" x="10"  y="70"  label="{capslock ? 'Q' : 'q'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="100" y="70"  label="{capslock ? 'W' : 'w'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="160" y="70"  label="{capslock ? 'E' : 'e'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="220" y="70"  label="{capslock ? 'R' : 'r'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="280" y="70"  label="{capslock ? 'T' : 't'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="340" y="70"  label="{capslock ? 'Y' : 'y'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="400" y="70"  label="{capslock ? 'U' : 'u'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="460" y="70"  label="{capslock ? 'I' : 'i'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="520" y="70"  label="{capslock ? 'O' : 'o'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="580" y="70"  label="{capslock ? 'P' : 'p'}"/>
+			
+			<cp:KeyBoardButton width="50" height="50" x="70"  y="130" label="{capslock ? 'A' : 'a'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="130" y="130" label="{capslock ? 'S' : 's'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="190" y="130" label="{capslock ? 'D' : 'd'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="250" y="130" label="{capslock ? 'F' : 'f'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="310" y="130" label="{capslock ? 'G' : 'g'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="370" y="130" label="{capslock ? 'H' : 'h'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="430" y="130" label="{capslock ? 'J' : 'j'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="490" y="130" label="{capslock ? 'K' : 'k'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="550" y="130" label="{capslock ? 'L' : 'l'}"/>
+			
+			<cp:KeyBoardButton width="50" height="50" x="100" y="190" label="{capslock ? 'Z' : 'z'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="160" y="190" label="{capslock ? 'X' : 'x'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="220" y="190" label="{capslock ? 'C' : 'c'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="280" y="190" label="{capslock ? 'V' : 'v'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="340" y="190" label="{capslock ? 'B' : 'b'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="400" y="190" label="{capslock ? 'N' : 'n'}"/>
+			<cp:KeyBoardButton width="50" height="50" x="460" y="190" label="{capslock ? 'M' : 'm'}"/>
+			
+			<cp:KeyBoardButton width="50" height="50" x="10"  y="130" label="|"/>
+			<cp:KeyBoardButton width="80" height="50" x="10"  y="190" label="Caps Lock" 
+							   skinClass="input.skins.MulButton" id="keyCapslock"/>
+		</s:Group>
+		
+		<s:Group includeIn="symbol" width="100%" height="100%">
+			<cp:KeyBoardButton width="80" height="50" x="10"  y="70"  label="`"/>
+			<cp:KeyBoardButton width="50" height="50" x="100" y="70"  label="&lt;"/>
+			<cp:KeyBoardButton width="50" height="50" x="160" y="70"  label="&gt;"/>
+			<cp:KeyBoardButton width="50" height="50" x="220" y="70"  label="("/>
+			<cp:KeyBoardButton width="50" height="50" x="280" y="70"  label=")"/>
+			<cp:KeyBoardButton width="50" height="50" x="340" y="70"  label="["/>
+			<cp:KeyBoardButton width="50" height="50" x="400" y="70"  label="]"/>
+			<cp:KeyBoardButton width="50" height="50" x="460" y="70"  label="{"/>
+			<cp:KeyBoardButton width="50" height="50" x="520" y="70"  label="}"/>
+			<cp:KeyBoardButton width="50" height="50" x="580" y="70"  label="|"/>
+			
+			<cp:KeyBoardButton width="50" height="50" x="10"  y="130" label="•"/>
+			<cp:KeyBoardButton width="50" height="50" x="70"  y="130" label="©"/>
+			<cp:KeyBoardButton width="50" height="50" x="130" y="130" label="€"/>
+			<cp:KeyBoardButton width="50" height="50" x="190" y="130" label="£"/>
+			<cp:KeyBoardButton width="50" height="50" x="250" y="130" label="µ"/>
+			<cp:KeyBoardButton width="50" height="50" x="310" y="130" label="½"/>
+			<cp:KeyBoardButton width="50" height="50" x="370" y="130" label="¦"/>
+			<cp:KeyBoardButton width="50" height="50" x="430" y="130" label="¶"/>
+			<cp:KeyBoardButton width="50" height="50" x="490" y="130" label="°"/>
+			<cp:KeyBoardButton width="50" height="50" x="550" y="130" label="~"/>
+			
+			<cp:KeyBoardButton width="80" height="50" x="10"  y="190" label="_"/>
+			<cp:KeyBoardButton width="50" height="50" x="100" y="190" label="^"/>
+			<cp:KeyBoardButton width="50" height="50" x="160" y="190" label="&quot;"/>
+			<cp:KeyBoardButton width="50" height="50" x="220" y="190" label="'"/>
+			<cp:KeyBoardButton width="50" height="50" x="280" y="190" label="#"/>
+			<cp:KeyBoardButton width="50" height="50" x="340" y="190" label="$"/>
+			<cp:KeyBoardButton width="50" height="50" x="400" y="190" label="%"/>
+			<cp:KeyBoardButton width="50" height="50" x="460" y="190" label="&amp;"/>
+		</s:Group>
+		
+		<cp:KeyBoardButton width="50" height="50" x="10"  y="10" label="1"/>
+		<cp:KeyBoardButton width="50" height="50" x="70"  y="10" label="2"/>
+		<cp:KeyBoardButton width="50" height="50" x="130" y="10" label="3"/>
+		<cp:KeyBoardButton width="50" height="50" x="190" y="10" label="4"/>
+		<cp:KeyBoardButton width="50" height="50" x="250" y="10" label="5"/>
+		<cp:KeyBoardButton width="50" height="50" x="310" y="10" label="6"/>
+		<cp:KeyBoardButton width="50" height="50" x="370" y="10" label="7"/>
+		<cp:KeyBoardButton width="50" height="50" x="430" y="10" label="8"/>
+		<cp:KeyBoardButton width="50" height="50" x="490" y="10" label="9"/>
+		<cp:KeyBoardButton width="50" height="50" x="550" y="10" label="0"/>
+		
+		
+		<cp:KeyBoardButton width="80" height="50" x="640" y="70"  label="@"/>
+		<cp:KeyBoardButton width="50" height="50" x="610" y="130" label=":"/>
+		<cp:KeyBoardButton width="50" height="50" x="670" y="130" label="."/>
+		<cp:KeyBoardButton width="50" height="50" x="520" y="190" label="="/>
+		<cp:KeyBoardButton width="50" height="50" x="580" y="190" label="\"/>
+		
+		<cp:KeyBoardButton width="50"  height="50" x="10"  y="250" label=","/>
+		<cp:KeyBoardButton width="50"  height="50" x="70"  y="250" label=";"/>
+		<cp:KeyBoardButton width="50"  height="50" x="130" y="250" label="?"/>
+		<cp:KeyBoardButton width="50"  height="50" x="190" y="250" label="!"/>
+		<cp:KeyBoardButton width="50"  height="50" x="430" y="250" label="+"/>
+		<cp:KeyBoardButton width="50"  height="50" x="490" y="250" label="-"/>
+		<cp:KeyBoardButton width="50"  height="50" x="550" y="250" label="*"/>
+		<cp:KeyBoardButton width="50"  height="50" x="610" y="250" label="/"/>
+		
+		<cp:KeyBoardButton width="170" height="50" x="250" y="250" label="Space"
+						   skinClass="input.skins.MulButton"/>
+		<cp:KeyBoardButton width="50"  height="50" x="730" y="10"  label="Home"
+						   skinClass="input.skins.MulButton"/>
+		<cp:KeyBoardButton width="50"  height="50" x="730" y="70"  label="PgUp"
+						   skinClass="input.skins.MulButton"/>
+		<cp:KeyBoardButton width="50"  height="50" x="730" y="130" label="PgDn"
+						   skinClass="input.skins.MulButton"/>
+		<cp:KeyBoardButton width="50"  height="50" x="730" y="190" label="End"
+						   skinClass="input.skins.MulButton"/>
+		<cp:KeyBoardButton width="110" height="50" x="610" y="10"  label="Backspace"
+						   skinClass="input.skins.MulButton"/>
+		<cp:KeyBoardButton width="80" height="50" x="640" y="190"
+						   label.letter="#%$" label.symbol="abc"
+						   skinClass="input.skins.MulButton"/>
+	</s:Group>
+	<fx:Script>
+		<![CDATA[
+			
+			import input.Input;
+			import input.core.ip;
+			
+			
+			/**
+			 * @private
+			 */
+			private function createTimer($delay:int, $repeat:int, $handler:Function):void
+			{
+				removeTimer();
+				
+				handler = $handler;
+				timer = new Timer($delay, $repeat);
+				timer.repeatCount
+					? timer.addEventListener(TimerEvent.TIMER_COMPLETE, handler)
+					: timer.addEventListener(TimerEvent.TIMER, handler);
+				timer.start();
+			}
+			
+			/**
+			 * @private
+			 */
+			private function removeTimer():void
+			{
+				if (timer)
+				{
+					timer.stop();
+					timer.repeatCount
+						? timer.removeEventListener(TimerEvent.TIMER_COMPLETE, handler)
+						: timer.removeEventListener(TimerEvent.TIMER, handler);
+					timer = null;
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function inputCode():void
+			{
+				Input.ip::inputCode(keyCode, charCode);
+				
+				if (stage && keyCode)
+				{
+					stage.dispatchEvent(new KeyboardEvent(
+						KeyboardEvent.KEY_DOWN, true, false, charCode, keyCode));
+				}
+			}
+			
+			
+			/**
+			 * 
+			 * 大小写锁定。
+			 * 
+			 */
+			[Bindable]
+			public function get capslock():Boolean
+			{
+				return Boolean(ip::capslock);
+			}
+			
+			/**
+			 * @private
+			 */
+			public function set capslock(value:Boolean):void
+			{
+				if (value != capslock)
+				{
+					ip::capslock = value;
+					keyCapslock.transform.colorTransform = capslock
+						? new ColorTransform(1, 1, 1, 1, 255, 0, 0, 0)
+						: new ColorTransform(1, 1, 1, 1, 0, 0, 0, 0);
+				}
+			}
+			
+			
+			/**
+			 * @private
+			 */
+			private function handlerKeyDown($e:MouseEvent):void
+			{
+				if ($e.target is KeyBoardButton)
+				{
+					type.play([this]);
+					
+					switch($e.target.label)
+					{
+						case "Caps Lock":
+							capslock = !capslock;
+							keyCode = 20;
+							charCode = 0;
+							break;
+						case "Home":
+							keyCode = 36;
+							charCode = 0;
+							break;
+						case "End":
+							keyCode = 35;
+							charCode = 0;
+							break;
+						case "PgUp":
+							keyCode = 33;
+							charCode = 0;
+							break;
+						case "PgDn":
+							keyCode = 34;
+							charCode = 0;
+							break;
+						case "Space":
+							charCode = keyCode = 32;
+							break;
+						case "Backspace":
+							charCode = keyCode = 8;
+							break;
+						case "#%$":
+							currentState = "symbol";
+							keyCode = charCode = 0;
+							break;
+						case "abc":
+							currentState = "letter";
+							keyCode = charCode = 0;
+							break;
+						case "Enter":
+							charCode = keyCode = 13;
+							break;
+						default:
+							keyCode = charCode = $e.target.label.charCodeAt(0);
+							if (keyCode >= 97 && keyCode < 123) keyCode -= 32;
+							if (capslock) charCode = keyCode;
+							break;
+					}
+					
+					inputCode();
+					
+					createTimer(1000, 1, handlerTimerComplete);
+					
+					stage.addEventListener(MouseEvent.MOUSE_UP, handlerKeyUp);
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function handlerKeyUp($e:MouseEvent):void
+			{
+				stage.removeEventListener(MouseEvent.MOUSE_UP, handlerKeyUp);
+				removeTimer();
+			}
+			
+			/**
+			 * @private
+			 */
+			private function handlerTimer($e:TimerEvent):void
+			{
+				inputCode();
+			}
+			
+			/**
+			 * @private
+			 */
+			private function handlerTimerComplete($e:TimerEvent):void
+			{
+				createTimer(50, 0, handlerTimer);
+			}
+			
+			
+			/**
+			 * 
+			 * 标题。
+			 * 
+			 */
+			
+			[Bindable]
+			public var title:String;
+			
+			
+			/**
+			 * @private
+			 */
+			private var timer:Timer;
+			
+			/**
+			 * @private
+			 */
+			private var handler:Function;
+			
+			/**
+			 * @private
+			 */
+			private var keyCode:uint;
+			
+			/**
+			 * @private
+			 */
+			private var charCode:uint;
+			
+			
+			/**
+			 * @private
+			 */
+			ip var capslock:Boolean = false;
+			
+		]]>
+	</fx:Script>
+</s:Group>

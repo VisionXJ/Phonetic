@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s ="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:cp="input.components.*"
+		 xmlns:ph="input.phonetic.*"
+		 width.english="790" width.chinese="1000"
+		 clipAndEnableScrolling="true" height="340"
+		 addedToStage="initializeEnvironment()">
+	<s:BorderContainer width="100%" height="100%"
+					   borderWeight="0" borderColor="0"
+					   mouseDown="handlerMouseDown(event)"/>
+	<s:Group width="100%" height="100%"
+			 mouseChildren="false" mouseEnabled="false">
+		<s:Rect width="{width}" height="{height}" radiusX="5" radiusY="5">
+			<s:fill>
+				<s:LinearGradient rotation="90">
+					<s:GradientEntry alpha="0.6" color="0x333333"/>
+					<s:GradientEntry alpha="1.0" color="0x333333"/>
+				</s:LinearGradient>
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+	<s:Group mouseEnabled="false">
+		<cp:Keyboard id="keyboard" title="{title}"/>
+		<cp:KeyBoardButton x="670" y="280" width="110" height="50"
+						   label.chinese="中文" label.english="English"
+						   click="changeState()"
+						   skinClass="input.skins.MulButton"/>
+	</s:Group>
+	<ph:Phonetic id="ime" includeIn="chinese" x="790" y="30"/>
+	
+	<s:states>
+		<s:State name="english"/>
+		<s:State name="chinese"/>
+	</s:states>
+	<s:transitions>
+		<s:Transition fromState="chinese" toState="english">
+			<s:Sequence duration="500">
+				<s:Resize target="{this}"/>
+				<s:RemoveAction target="{ime}"/>
+			</s:Sequence>
+		</s:Transition>
+		<s:Transition fromState="english" toState="chinese">
+			<s:Parallel duration="500" target="{this}"
+						effectStart="Tweener.addTween(this, 
+						{x:x+distance,time:.5, transition:'easeOutSine'})">
+				<s:Resize easer="{easer}"/>
+			</s:Parallel>
+		</s:Transition>
+	</s:transitions>
+	
+	<fx:Declarations>
+		<s:Sine id="easer"/>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import caurina.transitions.Tweener;
+			
+			import flash.filesystem.File;
+			
+			import input.core.ip;
+			
+			import mx.core.IVisualElementContainer;
+			
+			
+			/**
+			 * 
+			 * 输入字符编码。
+			 * 
+			 */
+			
+			ip static function inputCode($keyCode:uint, $charCode:uint):void
+			{
+				instance && instance.inputCode($keyCode, $charCode);
+			}
+			
+			
+			/**
+			 * 
+			 * 输入字符。
+			 * 
+			 */
+			
+			ip static function inputChar($char:String = null, $back:Boolean = false):void
+			{
+				instance && instance.inputChar($char, $back);
+			}
+			
+			
+			/**
+			 * 
+			 * 键盘组件的可移动矩形范围。
+			 * 
+			 */
+			[Bindable]
+			public static function get rect():Rectangle
+			{
+				return ip::rect;
+			}
+			
+			/**
+			 * @private
+			 */
+			public static function set rect($value:Rectangle):void
+			{
+				ip::rect = $value;
+			}
+			
+			
+			/**
+			 * 
+			 * 打开键盘。
+			 * 
+			 * @param $host:Object 需要编辑的文本输入框。
+			 * @param $name编辑的文本框属性，默认为text。
+			 * @param $container:DisplayObjectContainer 手写组件的父容器,用于检测手写组件的具体位置。
+			 * 
+			 */
+			
+			public static function open(textInput:Object, name:String = "text", container:DisplayObjectContainer = null):void
+			{
+				if (instance) instance.open(textInput, name, container);
+			}
+			
+			
+			/**
+			 * 
+			 * 关闭键盘。
+			 * 
+			 */
+			
+			public static function close():void
+			{
+				if (instance) instance.close();
+			}
+			
+			
+			/**
+			 * @private
+			 */
+			
+			private function open($host:Object, $name:String = "text", $container:DisplayObjectContainer = null):void
+			{
+				if(!tweening)
+				{
+					host = $host;
+					prop = ($name == null || $name == "undefined" || $name == "") ? "text" : $name;
+					container = $container;
+					if (opened)
+					{
+						componentMove();
+					}
+					else
+					{
+						opened = true;
+						componentTop();
+						positionCheck();
+						areaCoverCheck();
+						areaLimitedCheck();
+						createTimer();
+						x = aimX;
+						y = aimY;
+						alpha = 0;
+						aimA = 1;
+						visible = true;
+						callback = callbackOpen;
+						Tweener.addTween(this, {
+							alpha: aimA, time: tweenTime,
+							transition: tweenMethod, 
+							onComplete: callback});
+					}
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function close():void
+			{
+				if(opened && !tweening)
+				{
+					opened = false;
+					host = null;
+					tweening = true;
+					aimA = 0;
+					callback = callbackClose;
+					createTimer();
+					Tweener.addTween(this, {alpha: aimA, time: tweenTime,
+						transition: tweenMethod, onComplete: callback});
+					stage.removeEventListener(MouseEvent.CLICK, handlerStageCloseClick);
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function createTimer():void
+			{
+				if(!timer) {
+					timer = new Timer(500);
+					timer.addEventListener(TimerEvent.TIMER, handlerTimer);
+				}
+				timer.reset();
+				timer.start();
+			}
+			
+			/**
+			 * @private
+			 */
+			private function removeTimer():void
+			{
+				if (timer) {
+					timer.stop();
+					timer.removeEventListener(TimerEvent.TIMER, handlerTimer);
+					timer = null;
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function componentMove():void
+			{
+				stage.removeEventListener(MouseEvent.CLICK, handlerStageCloseClick);
+				if (parent)
+				{
+					aimX = parent.mouseX;
+					aimY = parent.mouseY;
+				}
+				else
+				{
+					aimX = aimY = 0;
+				}
+				areaCoverCheck();
+				areaLimitedCheck();
+				tweening = true;
+				Tweener.addTween(this, {x: aimX, y: aimY, time: tweenTime, transition: tweenMethod, onComplete: callbackOpen});
+			}
+			
+			/**
+			 * @private
+			 */
+			private function componentTop():void
+			{
+				if (parent)
+				{
+					if (parent is IVisualElementContainer)
+					{
+						var elementContainer:IVisualElementContainer = parent as IVisualElementContainer;
+						var c:int = elementContainer.getElementIndex(this);
+						var t:int = elementContainer.numElements - 1;
+						if (c < t)  elementContainer.setElementIndex(this, t);
+					}
+					else
+					{
+						c = parent.getChildIndex(this);
+						t = parent.numChildren - 1;
+						if (c < t) parent.setChildIndex(this, t);
+					}
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function areaCoverCheck():void
+			{
+				if (host)
+				{
+					var tx:Number = 0;
+					var ty:Number = 0;
+					var tw:Number = 0;
+					var th:Number = 0;
+					try
+					{
+						tx = velidateUndefined(host.mouseX) ? parent.mouseX - 50 : parent.mouseX - host.mouseX;
+						ty = velidateUndefined(host.mouseY) ? parent.mouseY - 15 : parent.mouseY - host.mouseY;
+						tw = velidateUndefined(host.width ) ? 100 : host.width;
+						th = velidateUndefined(host.height) ? 30 : host.height;
+					}
+					catch (e:Error)
+					{
+						tx = parent.mouseX - 50;
+						ty = parent.mouseY - 15;
+						tw = 100;
+						th = 30;
+					}
+					aimX = tx + tw * .5;
+					aimY =(ty + th * .5 < rect.bottom * .5) ? ty + th + 10 : ty - height - 10;
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function areaLimitedCheck():void
+			{
+				if (rect)
+				{
+					if (rect.width > width)
+					{
+						var l:Number = rect.left;
+						var r:Number = rect.right - width;
+						if (aimX < l || aimX > r)
+						{
+							aimX = Math.min(Math.max(l, aimX), r);
+							plsX = mouseX;
+						}
+					}
+					if (rect.height > height)
+					{
+						var u:Number = rect.top;
+						var d:Number = rect.bottom - height;
+						if (aimY < u || aimY > d)
+						{
+							aimY = Math.min(Math.max(u, aimY), d);
+							plsY = mouseY;
+						}
+					}
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function positionCheck():void
+			{
+				if (container)
+				{
+					aimX = container.mouseX;
+					aimY = container.mouseY;
+				}
+				else
+				{
+					if (parent)
+					{
+						container = parent;
+						aimX = container.mouseX;
+						aimY = container.mouseY;
+					}
+					else
+					{
+						aimX = aimY = 0;
+					}
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function changeState():void
+			{
+				currentState = (currentState == 'english') ? 'chinese' : 'english';
+			}
+			
+			/**
+			 * @private
+			 */
+			private function initializeEnvironment():void
+			{
+				visible = false;
+				instance = this;
+				rect = new Rectangle( 0, 0, parent.width, parent.height);
+			}
+			
+			/**
+			 * @private
+			 */
+			private function velidateUndefined($value:*):Boolean
+			{
+				return $value == "undefined" || $value == undefined;
+			}
+			
+			/**
+			 * @private
+			 */
+			private function inputCode($keyCode:uint, $charCode:uint):void
+			{
+				currentState == "english" || keyboard.currentState == "symbol"
+					? inputEnglish($keyCode, $charCode) 
+					: inputChinese($keyCode, $charCode);
+			}
+			
+			/**
+			 * @private
+			 */
+			private function inputChar($char:String, $back:Boolean):void
+			{
+				try
+				{
+					if ($back)
+					{
+						var tmp:String = host[prop];
+						host[prop] = tmp.substr(0, tmp.length - 1);
+					}
+					else
+					{
+						$char && (host[prop] += $char);
+					}
+				} catch (e:Error) { }
+			}
+			
+			/**
+			 * @private
+			 */
+			private function inputEnglish($keyCode:uint, $charCode:uint):void
+			{
+				inputChar(String.fromCharCode($charCode), $charCode == 8);
+			}
+			
+			/**
+			 * @private
+			 */
+			private function inputChinese($keyCode:uint, $charCode:uint):void
+			{
+				if (ime) ime.ip::inputCode($keyCode, $charCode);
+			}
+			
+			
+			/**
+			 * @private
+			 */
+			private function callbackOpen():void
+			{
+				tweening = false;
+				stage.addEventListener(MouseEvent.CLICK, handlerStageCloseClick);
+				removeTimer();
+			}
+			
+			/**
+			 * @private
+			 */
+			private function callbackClose():void
+			{
+				tweening = visible = false;
+				currentState = "english";
+				if (keyboard)
+				{
+					keyboard.capslock = false;
+					keyboard.currentState = "letter";
+				}
+				removeTimer();
+			}
+			
+			
+			/**
+			 * @private
+			 */
+			private function handlerTimer(e:TimerEvent):void
+			{
+				Tweener.addTween(this, {alpha: aimA, 
+					time: tweenTime, 
+					transition: tweenMethod, 
+					onComplete: callback});
+			}
+			
+			/**
+			 * @private
+			 */
+			private function handlerMouseDown($e:MouseEvent):void
+			{
+				plsX = mouseX;
+				plsY = mouseY;
+				stage.addEventListener("mouseMove", handlerMouseMove);
+				stage.addEventListener("mouseUp", handlerMouseUp);
+			}
+			
+			/**
+			 * @private
+			 */
+			private function handlerMouseMove(e:MouseEvent):void
+			{
+				aimX = parent.mouseX - plsX;
+				aimY = parent.mouseY - plsY;
+				areaLimitedCheck();
+				x = aimX;
+				y = aimY;
+			}
+			
+			/**
+			 * @private
+			 */
+			private function handlerMouseUp(e:MouseEvent):void
+			{
+				stage.removeEventListener("mouseMove", handlerMouseMove);
+				stage.removeEventListener("mouseUp", handlerMouseUp);
+			}
+			
+			/**
+			 * @private
+			 */
+			private function handlerStageCloseClick(e:MouseEvent):void
+			{
+				if (e.currentTarget != host && e.target != host)
+				{
+					if (mouseX < 0 || mouseX > width || 
+						mouseY < 0 || mouseY > height)
+						close();
+				}
+			}
+			
+			
+			/**
+			 * @inheritDoc
+			 */
+			
+			override public function set currentState($value:String):void
+			{
+				if (currentState != $value)
+				{
+					if ($value == "chinese")
+						distance = rect ? -Math.max(0, x + 1000 - rect.right) : 0;
+					super.currentState = $value;
+				}
+			}
+			
+			
+			/**
+			 * 
+			 * 标题。
+			 * 
+			 */
+			
+			[Bindable]
+			public var title:String = "Keyboard";
+			
+			
+			/**
+			 * @private
+			 */
+			[Bindable]
+			private var distance:Number = 0;
+			
+			/**
+			 * @private
+			 */
+			private var tweenMethod:String = "easeOutCirc";
+			
+			/**
+			 * @private
+			 */
+			private var host:*;
+			
+			/**
+			 * @private
+			 */
+			private var prop:String = "text";
+			
+			/**
+			 * @private
+			 */
+			private var opened:Boolean = false;
+			
+			/**
+			 * @private
+			 */
+			private var tweening:Boolean = false;
+			
+			/**
+			 * @private
+			 */
+			private var aimX:Number;
+			
+			/**
+			 * @private
+			 */
+			private var aimY:Number;
+			
+			/**
+			 * @private
+			 */
+			private var aimA:Number = 0;
+			
+			/**
+			 * @private
+			 */
+			private var plsX:Number;
+			
+			/**
+			 * @private
+			 */
+			private var plsY:Number;
+			
+			/**
+			 * @private
+			 */
+			private var timer:Timer;
+			
+			/**
+			 * @private
+			 */
+			private var callback:Function;
+			
+			/**
+			 * @private
+			 */
+			private var container:DisplayObjectContainer;
+			
+			
+			/**
+			 * 
+			 * 缓动时长。
+			 * 
+			 */
+			[Bindable]
+			public static var tweenTime:Number = .5;
+			
+			
+			/**
+			 * @private
+			 */
+			ip static var rect:Rectangle;
+			
+			
+			/**
+			 * @private
+			 */
+			private static var instance:Input;
+			
+		]]>
+	</fx:Script>
+</s:Group>

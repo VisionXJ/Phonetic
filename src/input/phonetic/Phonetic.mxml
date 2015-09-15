@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:s ="library://ns.adobe.com/flex/spark"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:cp="input.components.*"
+				   width="200" height="310"
+				   borderVisible="false" 
+				   backgroundAlpha="0">
+	<s:TextInput y="10" width="100%" height="35" editable="false"
+				 id="listEng" color="#000000" fontSize="20"/>
+	<s:TextArea y="50" width="100%" height="250"
+				id="listChi" color="#000000" 
+				fontFamily="微软雅黑" fontSize="14" lineHeight="25"
+				editable="false" selectable="false"
+				horizontalScrollPolicy="off"
+				verticalScrollPolicy="off"/>
+	<s:VGroup y="50" width="100%" height="250"
+			  gap="0" click="handlerTextButtonClick(event)">
+		<cp:TextButton id="btn0"/>
+		<cp:TextButton id="btn1"/>
+		<cp:TextButton id="btn2"/>
+		<cp:TextButton id="btn3"/>
+		<cp:TextButton id="btn4"/>
+		<cp:TextButton id="btn5"/>
+		<cp:TextButton id="btn6"/>
+		<cp:TextButton id="btn7"/>
+		<cp:TextButton id="btn8"/>
+		<cp:TextButton id="btn9"/>
+	</s:VGroup>
+	<fx:Script>
+		<![CDATA[
+			
+			import input.Input;
+			import input.core.ip;
+			import input.phonetic.data.$Dict;
+			
+			
+			/**
+			 * 
+			 * 按键。
+			 * @param $keyCode:uint 按键编码。
+			 * @param $charCode:uint 字符编码。
+			 * 
+			 */
+			
+			ip function inputCode($keyCode:uint, $charCode:uint):void
+			{
+				switch ($keyCode)
+				{
+					case 8: //backspace
+						back();
+						break;
+					case 36: //home
+						turn(int.MIN_VALUE, listEng.text);
+						break;
+					case 35: //end
+						turn(int.MAX_VALUE, listEng.text);
+						break;
+					case 33: //page up
+						turn(-1, listEng.text);
+						break;
+					case 34: //page down
+						turn(1, listEng.text);
+						break;
+					default:
+						processDefault($keyCode, $charCode);
+						break;
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function processDefault($keyCode:uint, $charCode:uint):void
+			{
+				if ($charCode > 0)
+				{
+					if ($charCode >= 97 && $charCode < 123)
+					{
+						if (listEng.text.length < 12)
+							grep(listEng.text += String.fromCharCode($charCode));
+					}
+					else if ($charCode >= 48 && $charCode < 58 && listEng.text != "")
+					{
+						var code:uint = $charCode == 48 ? 9 : $charCode - 49;
+						if (dataChi[code] != "") Input.ip::inputChar(dataChi[code]);
+						clear();
+					}
+					else
+					{
+						Input.ip::inputChar(String.fromCharCode($charCode));
+					}
+				}
+			}
+			
+			
+			/**
+			 * @private
+			 */
+			private function back():void
+			{
+				if (listEng.text != "")
+					grep(listEng.text = listEng.text.substr(0, listEng.text.length - 1));
+				else
+					Input.ip::inputChar(null, true);
+			}
+			
+			/**
+			 * @private
+			 */
+			private function clear($eng:Boolean = true):void
+			{
+				if ($eng) listEng.text = "";
+				listChi.text = "";
+				dataChi.length = dataEng.length = 0;
+				no = start = end = 0;
+			}
+			
+			/**
+			 * @private
+			 */
+			private function grep($input:String):void
+			{
+				for (var i:int = 0; i <= 9; i++) {dataChi[i] = dataEng[i] = "";}
+				if ($input != "")
+				{
+					var a:Array = dict[$input.charAt(0)];
+					if (a)
+					{
+						start = getStartInList($input, a);
+						if (start >= 0)
+						{
+							var e:int = getEndInList($input, a);
+							end = (Math.ceil((e - start) / 10) - 1) * 10 + start;
+							output(start, $input, a);
+						}
+						else
+						{
+							clear(false);
+						}
+					}
+				}
+				else
+				{
+					clear();
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function getStartInList($key:String, $list:Array):int
+			{
+				var r:int = -1, l:int = 0, m:int = 0, h:int = $list.length, s:String = "";
+				while (l < h)
+				{
+					m = int((l + h) / 2);				//中分
+					s = $list[m];						//中部字符串
+					if (s.indexOf($key) == 0)			//如果找到了,直接返回;
+					{
+						r = m;
+						break;
+					}
+					s = $list[m - 1];					//从中点向前查找
+					if (s.indexOf($key) == 0)			//找到返回
+					{
+						r = m;
+						break;
+					}
+					s < $key ? l = m + 1 : h = m - 1;	//比较大小决定向前还是向后
+				}
+				while (r > 0)							//最小为1
+				{
+					s = $list[r - 1];
+					if (s.indexOf($key) == 0)
+						r--;
+					else
+						break;
+				}
+				return r;
+			}
+			
+			/**
+			 * @private
+			 */
+			private function getEndInList($key:String, $list:Array):int
+			{
+				var r:int = start, l:int = $list.length, k:int = l - 1;
+				if ($key.length == 1)
+				{
+					r = l;
+				}
+				else
+				{
+					var t:int = r;
+					while ($list[t] && $list[t].indexOf($key) == 0) t++;
+					r = t - 1;
+				}
+				return r;
+			}
+			
+			/**
+			 * @private
+			 */
+			private function output($no:int, $input:String, $list:Array):void
+			{
+				var t:String = "", c:String = "";
+				listChi.text = "";
+				dataEng.length = dataChi.length = 0;
+				no = $no;
+				for (var i:int = 0; i < 10; i++) 									//从No开始列取十个CodeList中的元素
+				{
+					var btn:TextButton = this["btn" + i];
+					btn.enabled = false;
+					if ($no + i >= $list.length) break;
+					t = $list[$no + i];												//得到一个元素到临时字符串
+					if (t.indexOf($input) >= 0)										//如果临时字符串中存在输入框中的字符串
+					{
+						c = $list[$no + i]; 										//得到一个元素到中文字符串,然后分解这个字符串
+						dataEng[i] = c.substring($input.length, c.indexOf(SPACE)); 	//得到空格前面的子字符串
+						dataChi[i] = c.substr(c.lastIndexOf(SPACE) + 1);			//得到空格后面的子字符串
+						listChi.text += (i <= 8)
+							? String(i + 1) + "." + dataChi[i] + dataEng[i] + '\n'	//1-9的中文列表
+							: "0." + dataChi[i] + dataEng[i] + '\n';				//0的中文列表
+						btn.enabled = true;
+					}
+				}
+			}
+			
+			/**
+			 * @private
+			 */
+			private function turn($page:int, $key:String):void
+			{
+				if (listEng.text != "")
+				{
+					switch ($page)
+					{
+						case 1:
+							no = Math.min(no + 10, end);
+							break;
+						case -1:
+							no = Math.max(start, no - 10);
+							break;
+						case int.MIN_VALUE:
+							no = start;
+							break;
+						case int.MAX_VALUE:
+							no = end;
+							break;
+					}
+					output(no, $key, dict[$key.charAt(0)]);
+				}
+			}
+			
+			
+			/**
+			 * @private
+			 */
+			private function handlerTextButtonClick($e:MouseEvent):void
+			{
+				if (listChi.text != "")
+				{
+					var code:uint = uint($e.target.id.substr(-1));
+					code = (code <= 8) ? code + 1 : 0;
+					code = String(code).charCodeAt();
+					Input.ip::inputCode(code, code);
+				}
+			}
+			
+			
+			/**
+			 * @private
+			 */
+			private var start:int;
+			
+			/**
+			 * @private
+			 */
+			private var end:int;
+			
+			/**
+			 * @private
+			 */
+			private var dataChi:Array = [];
+			
+			/**
+			 * @private
+			 */
+			private var dataEng:Array = [];
+			
+			/**
+			 * @private
+			 */
+			private var no:int = 0;
+			
+			/**
+			 * @private
+			 */
+			private var dict:Object = $Dict.dict;
+			
+			
+			/**
+			 * @private
+			 */
+			private const SPACE:String = " ";
+			
+		]]>
+	</fx:Script>
+</s:BorderContainer>
